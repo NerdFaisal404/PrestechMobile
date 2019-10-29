@@ -4,117 +4,120 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 abstract class BaseTheme {
-  int themeID;
 
-  Color primary;
-  Color primary60;
-  Color primary50;
-  Color primary30;
-  Color primary15;
-  Color primary10;
+    int themeID;
 
-  Color secondary;
+    Color primary;
+    Color primary60;
+    Color primary50;
+    Color primary30;
+    Color primary15;
+    Color primary10;
 
-  Color success;
-  Color success30;
-  Color success15;
-  Color success10;
+    Color secondary;
 
-  Color danger;
-  Color danger30;
-  Color danger15;
+    Color success;
+    Color success30;
+    Color success15;
+    Color success10;
 
-  Color backgroundPrimary;
-  Color backgroundPrimary60;
-  Color backgroundPrimary30;
-  Color backgroundPrimary15;
+    Color danger;
+    Color danger30;
+    Color danger15;
 
-  Color backgroundSecondary;
+    Color backgroundPrimary;
+    Color backgroundPrimary60;
+    Color backgroundPrimary30;
+    Color backgroundPrimary15;
 
-  Color shadow;
-  Color shadow50;
-  Color shadow10;
+    Color backgroundSecondary;
 
-  Color textDark;
-  Color textDark60;
-  Color textDark50;
-  Color textDark40;
-  Color textDark30;
-  Color textDark15;
-  Color textDark10;
+    Color shadow;
+    Color shadow50;
+    Color shadow10;
 
-  Color textLight;
-  Color textLight30;
-  Color textLight15;
+    Color textDark;
+    Color textDark60;
+    Color textDark50;
+    Color textDark40;
+    Color textDark30;
+    Color textDark15;
+    Color textDark10;
 
-  Color overlay30;
-  Color overlay20;
-  Color overlay15;
-  Color overlay10;
+    Color textLight;
+    Color textLight30;
+    Color textLight15;
 
-  Color switchKnob;
-  Color switchTrack;
+    Color overlay30;
+    Color overlay20;
+    Color overlay15;
+    Color overlay10;
 
-  LinearGradient gradientPrimary;
+    Color switchKnob;
+    Color switchTrack;
 
-  LinearGradient gradientListTop;
+    LinearGradient gradientPrimary;
 
-  BoxShadow shadowPrimaryOne;
-  BoxShadow shadowPrimaryTwo;
+    LinearGradient gradientListTop;
 
-  BoxShadow shadowSuccessOne;
-  BoxShadow shadowSuccessTwo;
+    BoxShadow shadowPrimaryOne;
+    BoxShadow shadowPrimaryTwo;
 
-  BoxShadow shadowDangerOne;
-  BoxShadow shadowDangerTwo;
+    BoxShadow shadowSuccessOne;
+    BoxShadow shadowSuccessTwo;
 
-  BoxShadow shadowSucces;
+    BoxShadow shadowDangerOne;
+    BoxShadow shadowDangerTwo;
 
-  BoxShadow shadowTextDark;
-  BoxShadow shadowTextDarkTwo;
+    BoxShadow shadowSucces;
 
-  BoxShadow shadowMainCard;
+    BoxShadow shadowTextDark;
+    BoxShadow shadowTextDarkTwo;
 
-  BoxShadow shadowAccountCard;
+    BoxShadow shadowMainCard;
 
-  BoxShadow shadowBottomBar;
+    BoxShadow shadowAccountCard;
 
-  BoxShadow shadowSettingsList;
+    BoxShadow shadowBottomBar;
 
-  String illustrationNewWallet;
-  String illustrationBackup;
-  String illustrationTwoOptions;
-  String illustrationBorrowed;
-  String illustrationSecurity;
+    BoxShadow shadowSettingsList;
 
-  String animationWelcome;
-  String animationSend;
-  String animationNameChange;
-  String animationSale;
-  String animationTransfer;
-  String animationGetAccount;
-  String animationSearch;
+    String illustrationNewWallet;
+    String illustrationBackup;
+    String illustrationTwoOptions;
+    String illustrationBorrowed;
+    String illustrationSecurity;
 
-  Brightness brightness;
-  SystemUiOverlayStyle statusBar;
-  AppIconEnum appIcon;
+    String animationWelcome;
+    String animationSend;
+    String animationNameChange;
+    String animationSale;
+    String animationTransfer;
+    String animationGetAccount;
+    String animationSearch;
 
-  /// Operator overrides
-  bool operator ==(o) => (o != null && o.hashCode == hashCode);
-  int get hashCode => themeID.hashCode;
+    Brightness brightness;
+    SystemUiOverlayStyle statusBar;
+    AppIconEnum appIcon;
+
+    /// Operator overrides
+    bool operator ==(o) => (o != null && o.hashCode == hashCode);
+    int get hashCode => themeID.hashCode;
+
 }
 
 class BlaiseLightTheme extends BaseTheme {
-  int themeID = 1;
 
-  static const Color orange = Color(0xFFF7941F);
-  static const Color yellow = Color(0xFFFCC642);
-  static const Color teal = Color(0xFF00C5C3);
-  static const Color red = Color(0xFFFF6C59);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color white00 = Color(0x00FFFFFF);
-  static const Color grayDark = Color(0xFF6B6C71);
-  static const Color black = Color(0xFF000000);
+    int themeID = 1;
+
+    static const Color orange = Color(0xFFF7941F);
+    static const Color yellow = Color(337ab7);
+    static const Color teal = Color(0xFF00C5C3);
+    static const Color red = Color(0xFFFF6C59);
+    static const Color white = Color(0xFFFFFFFF);
+    static const Color white00 = Color(0x00FFFFFF);
+    static const Color grayDark = Color(0xFF6B6C71);
+    static const Color black = Color(0xFF000000);
 
   Color primary = orange;
   Color primary60 = orange.withOpacity(0.6);

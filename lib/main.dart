@@ -169,196 +169,132 @@ class _AppState extends State<App> {
                             default: return null;
                         }
                     },
-        locale: StateContainer.of(context).curLanguage == null || StateContainer.of(context).curLanguage.language == AvailableLanguage.DEFAULT ? null : StateContainer.of(context).curLanguage.getLocale(),
-        supportedLocales: [
-          // Languages
-          const Locale('en', 'US'), // English
-          const Locale('de', 'DE'), // German
-          const Locale('es'), // Spanish
-          const Locale('tr'), // Turkish
-          const Locale('ar'), // Arabic
-          const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'), // Chinese Simplified
-          // Currency-default requires country included
-          const Locale("es", "AR"),
-          const Locale("en", "AU"),
-          const Locale("en", "US"),
-          const Locale("pt", "BR"),
-          const Locale("en", "CA"),
-          const Locale("de", "CH"),
-          const Locale("es", "CL"),
-          const Locale("zh", "CN"),
-          const Locale("cs", "CZ"),
-          const Locale("da", "DK"),
-          const Locale("fr", "FR"),
-          const Locale("en", "GB"),
-          const Locale("zh", "HK"),
-          const Locale("hu", "HU"),
-          const Locale("id", "ID"),
-          const Locale("he", "IL"),
-          const Locale("hi", "IN"),
-          const Locale("ja", "JP"),
-          const Locale("ko", "KR"),
-          const Locale("es", "MX"),
-          const Locale("ta", "MY"),
-          const Locale("en", "NZ"),
-          const Locale("tl", "PH"),
-          const Locale("ur", "PK"),
-          const Locale("pl", "PL"),
-          const Locale("ru", "RU"),
-          const Locale("sv", "SE"),
-          const Locale("zh", "SG"),
-          const Locale("th", "TH"),
-          const Locale("tr", "TR"),
-          const Locale("en", "TW"),
-          const Locale("es", "VE"),
-          const Locale("en", "ZA"),
-          const Locale("en", "US"),
-          const Locale("es", "AR"),
-          const Locale("de", "AT"),
-          const Locale("fr", "BE"),
-          const Locale("de", "BE"),
-          const Locale("nl", "BE"),
-          const Locale("tr", "CY"),
-          const Locale("et", "EE"),
-          const Locale("fi", "FI"),
-          const Locale("fr", "FR"),
-          const Locale("el", "GR"),
-          const Locale("es", "AR"),
-          const Locale("en", "IE"),
-          const Locale("it", "IT"),
-          const Locale("es", "AR"),
-          const Locale("lv", "LV"),
-          const Locale("lt", "LT"),
-          const Locale("fr", "LU"),
-          const Locale("en", "MT"),
-          const Locale("nl", "NL"),
-          const Locale("pt", "PT"),
-          const Locale("sk", "SK"),
-          const Locale("sl", "SI"),
-          const Locale("es", "ES"),
-          const Locale("ar", "AE"), // UAE
-          const Locale("ar", "SA"), // Saudi Arabia
-          const Locale("ar", "KW"), // Kuwait          
-        ],
-      ),
-    );
-  }
+                    locale: StateContainer.of(context).curLanguage == null || StateContainer.of(context).curLanguage.language == AvailableLanguage.DEFAULT ? null : StateContainer.of(context).curLanguage.getLocale(),
+                    supportedLocales: [
+                      // Languages
+                      const Locale('en', 'US'), // English
+                      const Locale('es'), // Spanish
+                    ],
+                ),
+            );
+        }
 }
 
 /// Splash
 /// Default page route that determines if user is logged in and routes them appropriately.
 class Splash extends StatefulWidget {
-  @override
-  SplashState createState() => SplashState();
+    @override
+    SplashState createState() => SplashState();
 }
 
 class SplashState extends State<Splash> with WidgetsBindingObserver {
-  bool _hasCheckedLoggedIn;
 
-  Future checkLoggedIn({bool retry = false, bool legacyStorage = false}) async {
-    try {
-      if (!_hasCheckedLoggedIn) {
-        _hasCheckedLoggedIn = true;
-        if (await sl.get<SharedPrefsUtil>().getFirstLaunch()) {
-          await sl.get<SharedPrefsUtil>().deleteAll(firstLaunch: true);
-          await sl.get<Vault>().deleteAll();
-          await sl.get<SharedPrefsUtil>().setFirstLaunch();
-          Navigator.of(context).pushReplacementNamed('/intro_welcome');
-        } else if ((await sl.get<Vault>().getPrivateKey() != null) &&
-            (await sl.get<SharedPrefsUtil>().getPrivateKeyBackedUp())) {
-          if (await sl.get<SharedPrefsUtil>().getLock() || await sl.get<SharedPrefsUtil>().shouldLock()) {
-            Navigator.of(context).pushReplacementNamed('/lock_screen', arguments: TransitionOption.NONE);
-          } else {
-            walletState.requestUpdate();
-            Navigator.of(context).pushReplacementNamed('/overview',
-              arguments: TransitionOption.NONE);
-          }
-        } else {
-          Navigator.of(context).pushReplacementNamed('/intro_welcome');
+    bool _hasCheckedLoggedIn;
+
+    Future checkLoggedIn({bool retry = false, bool legacyStorage = false}) async {
+        try {
+            if (!_hasCheckedLoggedIn) {
+                _hasCheckedLoggedIn = true;
+                if (await sl.get<SharedPrefsUtil>().getFirstLaunch()) {
+                    await sl.get<SharedPrefsUtil>().deleteAll(firstLaunch: true);
+                    await sl.get<Vault>().deleteAll();
+                    await sl.get<SharedPrefsUtil>().setFirstLaunch();
+                    Navigator.of(context).pushReplacementNamed('/intro_welcome');
+                } else if ((await sl.get<Vault>().getPrivateKey() != null) &&
+                    (await sl.get<SharedPrefsUtil>().getPrivateKeyBackedUp())) {
+                    if (await sl.get<SharedPrefsUtil>().getLock() || await sl.get<SharedPrefsUtil>().shouldLock()) {
+                        Navigator.of(context).pushReplacementNamed('/lock_screen', arguments: TransitionOption.NONE);
+                    } else {
+                        walletState.requestUpdate();
+                        Navigator.of(context).pushReplacementNamed('/overview',
+                            arguments: TransitionOption.NONE);
+                    }
+                } else {
+                    Navigator.of(context).pushReplacementNamed('/intro_welcome');
+                }
+            }
+        } catch (e) {
+            // Attempt to retry if this failed
+            if (!retry) {
+                await sl.get<Vault>().deleteAll();
+                await sl.get<SharedPrefsUtil>().deleteAll();
+                checkLoggedIn(retry: true, legacyStorage: false);
+            } else if (Platform.isAndroid && e.toString().contains("flutter_secure") && !legacyStorage) {
+                /// Fallback secure storage
+                /// A very small percentage of users are encountering issues writing to the
+                /// Android keyStore using the flutter_secure_storage plugin.
+                ///
+                /// Instead of telling them they are out of luck, this is an automatic "fallback"
+                /// It will generate a 64-byte secret using the native android "bottlerocketstudios" Vault
+                /// This secret is used to encrypt sensitive data and save it in SharedPreferences
+                if (!(await sl.get<SharedPrefsUtil>().useLegacyStorage())) {
+                    await sl.get<SharedPrefsUtil>().setUseLegacyStorage();
+                    checkLoggedIn(retry: true, legacyStorage: true);
+                }
+            }
         }
-      }
-    } catch (e) {
-      // Attempt to retry if this failed
-      if (!retry) {
-        await sl.get<Vault>().deleteAll();
-        await sl.get<SharedPrefsUtil>().deleteAll();
-        checkLoggedIn(retry: true, legacyStorage: false);
-      } else if (Platform.isAndroid && e.toString().contains("flutter_secure") && !legacyStorage) {
-        /// Fallback secure storage
-        /// A very small percentage of users are encountering issues writing to the
-        /// Android keyStore using the flutter_secure_storage plugin.
-        ///
-        /// Instead of telling them they are out of luck, this is an automatic "fallback"
-        /// It will generate a 64-byte secret using the native android "bottlerocketstudios" Vault
-        /// This secret is used to encrypt sensitive data and save it in SharedPreferences
-        if (!(await sl.get<SharedPrefsUtil>().useLegacyStorage())) {
-          await sl.get<SharedPrefsUtil>().setUseLegacyStorage();
-          checkLoggedIn(retry: true, legacyStorage: true);
+    }
+
+    @override
+    void initState() {
+        super.initState();
+        WidgetsBinding.instance.addObserver(this);
+        _hasCheckedLoggedIn = false;
+        if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+            SchedulerBinding.instance.addPostFrameCallback((_) => checkLoggedIn());
         }
-      }
     }
-  }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _hasCheckedLoggedIn = false;
-    if (SchedulerBinding.instance.schedulerPhase ==
-        SchedulerPhase.persistentCallbacks) {
-      SchedulerBinding.instance.addPostFrameCallback((_) => checkLoggedIn());
+    @override
+    void dispose() {
+        WidgetsBinding.instance.removeObserver(this);
+        super.dispose();
     }
-  }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
+    @override
+    void didChangeAppLifecycleState(AppLifecycleState state) {
+        // Account for user changing locale when leaving the app
+        switch (state) {
+            case AppLifecycleState.paused:
+                super.didChangeAppLifecycleState(state);
+                break;
+            case AppLifecycleState.resumed:
+                setLanguage();
+                super.didChangeAppLifecycleState(state);
+                break;
+            default:
+                super.didChangeAppLifecycleState(state);
+                break;
+        }
+    }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Account for user changing locale when leaving the app
-    switch (state) {
-      case AppLifecycleState.paused:
-        super.didChangeAppLifecycleState(state);
-        break;
-      case AppLifecycleState.resumed:
+    void setLanguage() {
+        setState(() {
+            StateContainer.of(context).deviceLocale = Localizations.localeOf(context);
+        });
+        sl.get<SharedPrefsUtil>().getLanguage().then((setting) {
+            setState(() {
+                StateContainer.of(context).updateLanguage(setting);
+            });
+        });    
+    }
+
+    void setDeviceLocaleAndCurrency() {
+        setState(() {
+            StateContainer.of(context).deviceLocale = Localizations.localeOf(context);
+            sl.get<SharedPrefsUtil>().getCurrency(StateContainer.of(context).deviceLocale).then((currency) {
+                StateContainer.of(context).curCurrency = currency;
+            });
+        });
+    }
+
+    @override
+    Widget build(BuildContext context) {
+        setDeviceLocaleAndCurrency();
         setLanguage();
-        super.didChangeAppLifecycleState(state);
-        break;
-      default:
-        super.didChangeAppLifecycleState(state);
-        break;
+        return Scaffold(
+            backgroundColor: StateContainer.of(context).curTheme.backgroundPrimary,
+        );
     }
-  }
 
-  void setLanguage() {
-    setState(() {
-      StateContainer.of(context).deviceLocale = Localizations.localeOf(context);
-    });
-    sl.get<SharedPrefsUtil>().getLanguage().then((setting) {
-      setState(() {
-        StateContainer.of(context).updateLanguage(setting);
-      });
-    });    
-  }
-
-  void setDeviceLocaleAndCurrency() {
-    setState(() {
-      StateContainer.of(context).deviceLocale = Localizations.localeOf(context);
-      sl.get<SharedPrefsUtil>().getCurrency(StateContainer.of(context).deviceLocale).then((currency) {
-        StateContainer.of(context).curCurrency = currency;
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    setDeviceLocaleAndCurrency();
-    setLanguage();
-    return Scaffold(
-      backgroundColor: StateContainer.of(context).curTheme.backgroundPrimary,
-    );
-  }
 }

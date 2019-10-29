@@ -20,124 +20,126 @@ class Account = AccountBase with _$Account;
 
 /// State for a specific account
 abstract class AccountBase with Store {
-  Logger log = sl.get<Logger>();
 
-  @observable
-  bool operationsLoading = true;
+    Logger log = sl.get<Logger>();
 
-  @observable
-  RPCClient rpcClient;
+    @observable
+    bool operationsLoading = true;
 
-  @observable
-  PascalAccount account;
+    @observable
+    RPCClient rpcClient;
 
-  @observable
-  Currency accountBalance;
+    @observable
+    PascalAccount account;
 
-  @observable
-  List<PascalOperation> operations;
+    @observable
+    Currency accountBalance;
 
-  @observable
-  List<PascalOperation> operationsToDisplay;
+    @observable
+    List<PascalOperation> operations;
 
-  @observable
-  bool paid;
+    @observable
+    List<PascalOperation> operationsToDisplay;
 
-  AccountBase({@required this.rpcClient, @required this.account}) {
-    this.accountBalance = account.balance;
-    this.paid = false;
-  }
+    @observable
+    bool paid;
 
-  @action
-  void decrementBalance(Currency delta) {
-    this.account.balance -= delta;
-    this.accountBalance -= delta;
-  }
-
-  @action
-  void incrementBalance(Currency delta) {
-    this.account.balance += delta;
-    this.accountBalance += delta;
-  }
-
- @action
-  Future<RPCResponse> jRpcRequest(Map<String, dynamic> request) async {
-    /// This custom request includes borrowed accounts
-    request['id'] = this.rpcClient.id;
-    String responseJson = await this.rpcClient.rpcPost(request);
-    if (responseJson == null) {
-      throw Exception('Did not receive a response');
+    AccountBase({@required this.rpcClient, @required this.account}) {
+        this.accountBalance = account.balance;
+        this.paid = false;
     }
-    // Parse base response
-    BaseResponse resp = BaseResponse.fromJson(json.decode(responseJson));
-    // Determine if error response
-    if (resp is Map &&
-        resp.result.containsKey('code') &&
-        resp.result.containsKey('message')) {
-      return ErrorResponse.fromJson(resp.result);
-    }
-    // Determine correct response type
-    if (resp.result.containsKey('paid')) {
-      this.paid = resp.result['paid'];
-      resp.result.remove('paid');
-    }
-    return PascalAccount.fromJson(resp.result);
-  }
 
-  @action
-  Future<bool> updateAccount() async {
-    // Update account information via getaccount, return false is unsuccessful true otherwise
-    bool hasCustomDaemon = (await sl.get<SharedPrefsUtil>().getRpcUrl()) != AppConstants.DEFAULT_RPC_HTTP_URL;
-    GetAccountRequest request = GetAccountRequest(account: this.account.account.account);
-    Map<String, dynamic> requestJson = request.toJson();
-    if (!hasCustomDaemon && account.isBorrowed) {
-      requestJson['params'].putIfAbsent('borrowed', () => true);
+    @action
+    void decrementBalance(Currency delta) {
+        this.account.balance -= delta;
+        this.accountBalance -= delta;
     }
-    RPCResponse resp = await this.jRpcRequest(requestJson);
-    if (resp.isError) {
-      return false;
-    }
-    PascalAccount updatedAccount = resp;
-    // See if this accounts borrowed status has changed
-    if (this.account.isBorrowed) {
-      String curAcctPubkey = PublicKeyCoder().encodeToBase58(updatedAccount.encPubkey);
-      String curWalletPubkey = PublicKeyCoder().encodeToBase58(walletState.publicKey);
-      if (curAcctPubkey != curWalletPubkey) {
-        updatedAccount.isBorrowed = true;
-      }
-    }
-    this.account = updatedAccount;
-    this.accountBalance = updatedAccount.balance;
-    return true;
-  }
 
-  @action
-  void addNewOperation(PascalOperation op) {
-    /// Add operation if:
-    /// 1) We don't have it
-    /// 2) We do have it, but it has since been confirmed
-    /// 3) This account is not borrowed
-    if (this.operations == null) {
-      return;
+    @action
+    void incrementBalance(Currency delta) {
+        this.account.balance += delta;
+        this.accountBalance += delta;
     }
-    if (!this.operations.contains(op) || this.operations.contains(op) && this.operations.firstWhere((nOp) => nOp == op).maturation == null && op.maturation != null) {
-      if (this.operations.contains(op)) {
-        this.operations.remove(op);
-      }
-      this.operations.insert(0, op);
-      // Re-sort this list
-      // Remove pendings
-      List<PascalOperation> pendings = this.operations.where((op) => op.maturation == null).toList();
-      this.operations.removeWhere((op) => op.maturation == null);
-      // Sort by time
-      this.operations.sort((a, b) => b.time.compareTo(a.time));
-      this.operations.insertAll(0, pendings);
-      // Update to display
-      this.operationsToDisplay = getOperationsToDisplay();
-      // Refresh total wallet balance
-      EventTaxiImpl.singleton().fire(UpdateHistoryEvent());
+
+    @action
+    Future<RPCResponse> jRpcRequest(Map<String, dynamic> request) async {
+        /// This custom request includes borrowed accounts
+        request['id'] = this.rpcClient.id;
+        String responseJson = await this.rpcClient.rpcPost(request);
+        if (responseJson == null) {
+            throw Exception('Did not receive a response');
+        }
+        // Parse base response
+        BaseResponse resp = BaseResponse.fromJson(json.decode(responseJson));
+        // Determine if error response
+        if (resp is Map &&
+            resp.result.containsKey('code') &&
+            resp.result.containsKey('message')) {
+                return ErrorResponse.fromJson(resp.result);
+            }
+        // Determine correct response type
+        if (resp.result.containsKey('paid')) {
+            this.paid = resp.result['paid'];
+            resp.result.remove('paid');
+        }
+        return PascalAccount.fromJson(resp.result);
     }
-  }
+
+    @action
+    Future<bool> updateAccount() async {
+
+        // Update account information via getaccount, return false is unsuccessful true otherwise
+        bool hasCustomDaemon = (await sl.get<SharedPrefsUtil>().getRpcUrl()) != AppConstants.DEFAULT_RPC_HTTP_URL;
+        GetAccountRequest request = GetAccountRequest(account: this.account.account.account);
+        Map<String, dynamic> requestJson = request.toJson();
+        if (!hasCustomDaemon && account.isBorrowed) {
+            requestJson['params'].putIfAbsent('borrowed', () => true);
+        }
+        RPCResponse resp = await this.jRpcRequest(requestJson);
+        if (resp.isError) {
+            return false;
+        }
+        PascalAccount updatedAccount = resp;
+        // See if this accounts borrowed status has changed
+        if (this.account.isBorrowed) {
+            String curAcctPubkey = PublicKeyCoder().encodeToBase58(updatedAccount.encPubkey);
+            String curWalletPubkey = PublicKeyCoder().encodeToBase58(walletState.publicKey);
+            if (curAcctPubkey != curWalletPubkey) {
+                updatedAccount.isBorrowed = true;
+            }
+        }
+        this.account = updatedAccount;
+        this.accountBalance = updatedAccount.balance;
+        return true;
+    }
+
+    @action
+    void addNewOperation(PascalOperation op) {
+        /// Add operation if:
+        /// 1) We don't have it
+        /// 2) We do have it, but it has since been confirmed
+        /// 3) This account is not borrowed
+        if (this.operations == null) {
+            return;
+        }
+        if (!this.operations.contains(op) || this.operations.contains(op) && this.operations.firstWhere((nOp) => nOp == op).maturation == null && op.maturation != null) {
+            if (this.operations.contains(op)) {
+                this.operations.remove(op);
+            }
+            this.operations.insert(0, op);
+            // Re-sort this list
+            // Remove pendings
+            List<PascalOperation> pendings = this.operations.where((op) => op.maturation == null).toList();
+            this.operations.removeWhere((op) => op.maturation == null);
+            // Sort by time
+            this.operations.sort((a, b) => b.time.compareTo(a.time));
+            this.operations.insertAll(0, pendings);
+            // Update to display
+            this.operationsToDisplay = getOperationsToDisplay();
+            // Refresh total wallet balance
+            EventTaxiImpl.singleton().fire(UpdateHistoryEvent());
+        }
+    }
 
   @action
   void diffAndSortOperations(List<PascalOperation> newOperationList) {
